@@ -1,0 +1,117 @@
+﻿<Window x:Class="NetVisionClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NetVisionClient"
+        mc:Ignorable="d"
+        Title="NetVisionClient" Width="1280" Height="720"
+        Background="#1E1E1E"
+        Closing="Window_Closing"
+        KeyDown="Window_KeyDown">
+    <Window.Resources>
+        <!-- Style for DataGridColumnHeader to handle double-click for renaming and single-click for selection -->
+        <Style TargetType="DataGridColumnHeader" x:Key="EditableColumnHeaderStyle">
+            <Setter Property="Background" Value="#2E2E2E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderBrush" Value="#5b4965"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <EventSetter Event="MouseDoubleClick" Handler="OnColumnHeaderDoubleClick"/>
+            <EventSetter Event="Click" Handler="OnColumnHeaderClick"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="2"/>
+            <RowDefinition Height="230"/>
+        </Grid.RowDefinitions>
+
+        <!-- Main DataGrid with CanUserAddRows and CanUserSortColumns set to False -->
+        <DataGrid x:Name="DynamicDataGrid" Grid.Row="0" Style="{StaticResource DarkDataGridStyle}" 
+                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserSortColumns="False">
+            <DataGrid.ColumnHeaderStyle>
+                <StaticResource ResourceKey="EditableColumnHeaderStyle"/>
+            </DataGrid.ColumnHeaderStyle>
+        </DataGrid>
+
+        <!-- Static Horizontal Line Separator -->
+        <Border Grid.Row="1" Background="#5b4965" Height="2"/>
+
+        <!-- Bottom Control Section -->
+        <Grid Grid.Row="2" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Button Panel -->
+            <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,10,0">
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="addRowButton" Width="130" Content="Add Row" Style="{StaticResource DarkRectButton}" Click="OnAddRowClick"/>
+                    <Button x:Name="deleteRowButton" Width="130" Content="Delete Row" Style="{StaticResource DarkRectButton}" Click="OnDeleteRowClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="addColumnButton" Width="130" Content="Add Column" Style="{StaticResource DarkRectButton}" Click="OnAddColumnClick"/>
+                    <Button x:Name="deleteColumnButton" Width="130" Content="Delete Column" Style="{StaticResource DarkRectButton}" Click="OnDeleteColumnClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="moveUpButton" Width="130" Content="Move Up" Style="{StaticResource DarkRectButton}" Click="OnMoveUpClick"/>
+                    <Button x:Name="moveDownButton" Width="130" Content="Move Down" Style="{StaticResource DarkRectButton}" Click="OnMoveDownClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="loadDataButton" Width="130" Content="Load Data" Style="{StaticResource DarkRectButton}" Click="OnLoadDataClick"/>
+                    <Button x:Name="saveDataButton" Width="130" Content="Save Data" Style="{StaticResource DarkRectButton}" Click="OnSaveDataClick"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Border Grid.Column="1" Background="#5b4965"/>
+
+            <StackPanel Grid.Column="2" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBox x:Name="addressTextBox" Text="127.0.0.1:25565" Width="200" Style="{StaticResource DarkTextBoxStyle}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="connectButton" Width="100" Content="Connect" Margin="5" Style="{StaticResource DarkRectButton}" Click="OnConnectClick"/>
+                    <Button x:Name="sendButton" IsEnabled="False" Width="100" Content="Send" Margin="5" Style="{StaticResource DarkRectButton}" Click="OnSendClick"/>
+                    <Button x:Name="disconnectButton" IsEnabled="False" Width="100" Content="Disconnect" Margin="5" Style="{StaticResource DarkRectButton}" Click="OnDisconnectClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <Ellipse x:Name="statusEllipse" Width="12" Height="12" Fill="Red" Margin="0,0,5,0"/>
+                    <TextBlock Text="Status: " Foreground="White" Margin="5,0"/>
+                    <TextBlock x:Name="connectionStatus" Text="Disconnected" Foreground="White" Margin="5,0"/>
+                    <TextBlock x:Name="connectionTimerText" Text="00:00:00" Foreground="LightGray" Margin="10,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <TextBlock x:Name="confirmationText" Text="None" Foreground="LightGray" Margin="10,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <TextBlock x:Name="dataGridMessageText" Text="None" Foreground="LightGray" Margin="10,0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Border Grid.Column="3" Background="#5b4965"/>
+
+            <StackPanel Grid.Column="4" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBox x:Name="timerTextBox" Text="00:00:00" TextAlignment="Center" Width="100" Style="{StaticResource DarkTextBoxStyle}"
+                             PreviewTextInput="TimerTextBox_PreviewTextInput" TextChanged="TimerTextBox_TextChanged" PreviewKeyDown="TimerTextBox_PreviewKeyDown" LostFocus="TimerTextBox_LostFocus" MaxLength="8"/>
+                    <Button x:Name="setButton" Width="85" Content="Set" Margin="5" Style="{StaticResource DarkRectButton}" Click="OnSetTimerClick"/>
+                    <Button x:Name="resetButton" Width="85" Content="Reset" Margin="5" Style="{StaticResource DarkRectButton}" Click="OnResetTimerClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="startButton" IsEnabled="False" Width="85" Content="Start" Margin="5" Style="{StaticResource DarkRectButton}" Click="OnStartTimerClick"/>
+                    <Button x:Name="stopButton" IsEnabled="False" Width="85" Content="Stop" Margin="5" Style="{StaticResource DarkRectButton}" Click="OnStopTimerClick"/>
+                    <Button x:Name="resumeButton" IsEnabled="False" Width="85" Content="Resume" Margin="5" Style="{StaticResource DarkRectButton}" Click="OnResumeTimerClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Label x:Name="timerLabel" Content="00:00:00" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="100" Style="{StaticResource DarkLabelStyle}"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
